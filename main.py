@@ -60,20 +60,14 @@ SET
         return cursor.fetchone()[0]
 
 
-    def getid(id):
-        if id == 15:
-            return 10
-        else:
-            cursor.execute('SELECT "id" FROM test WHERE id = %s;', [id])
-            return cursor.fetchone()[0]
 
 
     def arrofid(arr, i):
-        while query('SELECT "Type" FROM test WHERE id = %s;', i) != 1 and getid(i) != maxid():
+        while query('SELECT "Type" FROM test WHERE id = %s;', i) != 1 and i != maxid():
             if i == 15:
                 i += 1
             else:
-                arr.append(getid(i))
+                arr.append(i)
                 i += 1
 
         if args.id[0] in arr:
