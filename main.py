@@ -61,11 +61,9 @@ SET
 
 
     def getid(id):
-        print("id before", id)
         if id == 15:
             return 10
         else:
-            print(id)
             cursor.execute('SELECT "id" FROM test WHERE id = %s;', [id])
             return cursor.fetchone()[0]
 
@@ -92,7 +90,6 @@ SET
             arr.clear()
             arr.append(i)
             i += 1
-            print("func def id ", i)
             arrofid(arr, i)
 
 
