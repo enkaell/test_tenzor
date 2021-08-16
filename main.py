@@ -4,7 +4,6 @@ import json, sys, os, argparse
 
 #Подключение к БД
 try:
-    # Connect to db
     con = psycopg2.connect(user="postgres",
                            password="vlad",
                            host="127.0.0.1",
