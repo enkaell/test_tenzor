@@ -2,6 +2,7 @@ import psycopg2
 from psycopg2.extras import Json
 import json, sys, os, argparse
 
+#Подключение к БД
 try:
     # Connect to db
     con = psycopg2.connect(user="postgres",
@@ -32,67 +33,62 @@ SET
 	'''.format(json.dumps(data))
     cursor.execute(query)
     con.commit()
-
+    #Создание позиционных аргументов командной строки
     parser = argparse.ArgumentParser(description="Вывод списка сотрудников по индексу сотрудника")
     parser.add_argument('id', metavar='N', type=int, nargs='+',
                         help='Введите индекс сотрудника')
 
     args = parser.parse_args()
 
-
+    #Функция для запросов в бд
+    #text - str sql - запрос
+    #value - int значение для выборки
     def query(text, value):
-        if value > maxid() or value < minid():
-            return 0
-        elif value == 15:
-            return 10
-        else:
-            cursor.execute(text, [value])
-            return cursor.fetchone()[0]
+        cursor.execute(text, [value])
+        return cursor.fetchone()[0]
 
 
+    #Функция для поиска максимального значения идентификатора в базе
     def maxid():
         cursor.execute('SELECT max("id") FROM test;')
         return cursor.fetchone()[0]
 
 
+    #Функция для поиска минимального значения идентификатора в базе
     def minid():
         cursor.execute('SELECT min("id") FROM test;')
         return cursor.fetchone()[0]
 
 
+    #Функция для поиска и вывода имен по идентификатору
+    #arr - list список который будет заполняться идентификаторами
+    #searchid - int идентифкатор по которому будет осуществляться поиск
+    def arrofid(arr, searchid):
+        while query('SELECT "Type" FROM test WHERE id = %s;', searchid) != 1:
+            searchid -= 1
+            if searchid == 15:
+                searchid -= 1
+
+        top = searchid
+        searchid += 1
+        while searchid != maxid()+1 and query('SELECT "Type" FROM test WHERE id = %s;', searchid) != 1:
+            arr.append(searchid)
+            searchid += 1
+            if searchid == 15:
+                searchid += 1
+
+        print("Список сотрудников в ", query('SELECT "Name" FROM test WHERE id = %s-1;', arr[0]))
+
+        for i in arr:
+            if query('SELECT "Type" FROM test WHERE  "id" = %s;', i) == 3:
+                print(query('SELECT "Name" FROM test WHERE id = %s;', i))
 
 
-    def arrofid(arr, i):
-        while query('SELECT "Type" FROM test WHERE id = %s;', i) != 1 and i != maxid():
-            if i == 15:
-                i += 1
-            else:
-                arr.append(i)
-                i += 1
-
-        if args.id[0] in arr:
-            arr2 = []
-            arr.append(i)
-            print("Список сотрудников в ", query('SELECT "Name" FROM test WHERE id = %s;', arr[0]))
-            for i in arr:
-                cursor.execute('SELECT "Name" FROM test WHERE id = %s AND "Type" = 3;', [i])
-                arr2.append(cursor.fetchone())
-            res = list(filter(None, arr2))
-            print("\n".join(map(lambda xs: " ".join(map(str, xs)), res)))
-
-        elif args.id[0] not in arr:
-            arr.clear()
-            arr.append(i)
-            i += 1
-            arrofid(arr, i)
-
-
-    i = 1
     arr = []
-    if query('SELECT "Type" FROM test WHERE id = %s;', args.id[0]) != 3:
+    if args.id[0] > maxid() or args.id[0] == 15 or  args.id[0]< minid() or query('SELECT "Type" FROM test WHERE id = %s;', args.id[0]) != 3:
         print("Input Error")
     else:
-        arrofid(arr, i)
+        arrofid(arr, args.id[0])
 
 
 
